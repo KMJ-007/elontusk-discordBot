@@ -12,7 +12,15 @@ const commandFolders = fs.readdirSync("./src/commands/");
 client.on('ready', () => {
     console.log("ElonTusk is live!");
 });
+client.on('message', msg =>{
+    if(msg.content === 'hey'){
+        msg.reply(`hello ${msg.author}`);
+    }
 
+    if(msg.mentions.has(client.user.id)){
+        msg.channel.send(`hello ${msg.author}`);
+    }
+});
     for(file of functions){
         require(`./functions/${file}`)(client);
     }
