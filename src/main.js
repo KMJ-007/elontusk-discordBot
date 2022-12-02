@@ -29,3 +29,4 @@ client.on('message', msg =>{
     client.handleCommands(commandFolders, "./src/commands");
 
 client.login(process.env.TOKEN);
+
