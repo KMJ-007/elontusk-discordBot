@@ -21,3 +21,4 @@ client.on('ready', () => {
     client.handleCommands(commandFolders, "./src/commands");
 
 client.login(process.env.TOKEN);
+
