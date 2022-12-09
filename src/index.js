@@ -1,24 +1,95 @@
-const {Client, Intents, Collection} = require('discord.js');
-const client = new Client({intents: [Intents.FLAGS.GUILDS]});
-require('dotenv').config();
+const fs = require("node:fs");
+const path = require("node:path");
+const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
+const { token } = require("./config.json");
 
-client.commands = new Collection();
+const keepAlive = require('./serverWake.js');
 
-const fs = require('fs');
-const functions = fs.readdirSync("./src/functions/").filter(file => file.endsWith(".js"));
-const eventFiles = fs.readdirSync("./src/events/").filter(file => file.endsWith(".js"));
-const commandFolders = fs.readdirSync("./src/commands/");
-
-client.on('ready', () => {
-    console.log("ElonTusk is live!");
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+  ]
 });
 
-    for(file of functions){
-        require(`./functions/${file}`)(client);
-    }
+client.commands = new Collection();
+const commandsPath = path.join(__dirname, "commands");
+const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"));
 
-    client.handleEvents(eventFiles, "./src/events");
-    client.handleCommands(commandFolders, "./src/commands");
+for (const file of commandFiles) {
+  const filePath = path.join(commandsPath, file);
+  const command = require(filePath);
+  // Set a new item in the Collection with the key as the command name and the value as the exported module
 
-client.login(process.env.TOKEN);
+  if ("data" in command && "execute" in command) {
+    client.commands.set(command.data.name, command);
+  } else {
+    console.log(
+      `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+    );
+  }
+}
 
+client.once(Events.ClientReady, () => {
+  console.log("Freud is live");
+});
+
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  const command = client.commands.get(interaction.commandName);
+
+  if (!command) return;
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({
+      content: "There was an error while executing this command!",
+      ephemeral: true,
+    });
+  }
+});
+
+//hello message
+client.on("messageCreate", (message) => {
+  if (message.author.bot) return false;
+
+  if (message.content === "hello Freud") {
+    message.channel.send(`hi ${message.author.username}`);
+  }
+
+});
+
+
+//Apreciation Thread on commit 
+client.on('messageCreate', async (msg) => {
+  let cmtLnk = /https:\/\/github\.com\/.*\/.*\/commit\/[0-9a-f]{40}/;
+
+  if (msg.content.match(cmtLnk) !== null) {
+
+    msg.react('🔥')
+    const thread =  await msg.channel.threads.create({
+      name: "AppreciationThread",  
+    }); 
+    const threadId = thread.id;
+  
+
+    const webhooks = await msg.channel.fetchWebhooks();
+    const webhook = webhooks.first();
+
+    await webhook.send({
+      content: 'Damnn Bro, You Work too hard !!',
+      threadId: threadId,
+    });
+  }
+});
+
+
+
+keepAlive()
+
+client.login(token);
