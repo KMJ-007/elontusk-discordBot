@@ -54,7 +54,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
+<<<<<<< HEAD
 //hello message
+=======
+>>>>>>> c1325b45b239344232aa3896191173ccaacf9a2b
 client.on("messageCreate", (message) => {
   if (message.author.bot) return false;
 
@@ -64,6 +67,7 @@ client.on("messageCreate", (message) => {
 
 });
 
+<<<<<<< HEAD
 
 //Apreciation Thread on commit 
 client.on('messageCreate', async (msg) => {
@@ -89,6 +93,14 @@ client.on('messageCreate', async (msg) => {
 });
 
 
+=======
+client.on('messageCreate', (msg) => {
+  if (msg.content.includes('google.com/')) {
+    msg.delete()
+      .then(msg.channel.send("Link Deleted:\n**Don't Send links in the channel**"))
+  }
+})
+>>>>>>> c1325b45b239344232aa3896191173ccaacf9a2b
 
 keepAlive()
 
