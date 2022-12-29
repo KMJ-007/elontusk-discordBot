@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
-const { token } = require("./config.json");
+const { token } = process.env['TOKEN']
 
 const keepAlive = require('./serverWake.js');
 
@@ -72,11 +72,11 @@ client.on('messageCreate', async (msg) => {
   if (msg.content.match(cmtLnk) !== null) {
 
     msg.react('🔥')
-    const thread =  await msg.channel.threads.create({
-      name: "AppreciationThread",  
-    }); 
+    const thread = await msg.channel.threads.create({
+      name: "AppreciationThread",
+    });
     const threadId = thread.id;
-  
+
 
     const webhooks = await msg.channel.fetchWebhooks();
     const webhook = webhooks.first();
