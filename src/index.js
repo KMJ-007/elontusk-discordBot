@@ -1,9 +1,13 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
-const { token } = process.env['TOKEN']
-
+const { Client, Collection, Events, GatewayIntentBits, Embed } = require("discord.js");
+const { token } = require("./config.json");
+// const { EmbedBuilder } = require('discord.js');
+var todaysUpdaters = new Array();
+todaysUpdaters.push('empty');
 const keepAlive = require('./serverWake.js');
+const scheduleEmbed = require('../node_modules/node-schedule');
+const scheduleArchieve = require('../node_modules/node-schedule');
 
 const client = new Client({
   intents: [
@@ -31,9 +35,8 @@ for (const file of commandFiles) {
     );
   }
 }
-
 client.once(Events.ClientReady, () => {
-  console.log("Freud is live");
+  console.log("Elon is live");
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -65,28 +68,51 @@ client.on("messageCreate", (message) => {
 });
 
 
+
 //Apreciation Thread on commit 
 client.on('messageCreate', async (msg) => {
   let cmtLnk = /https:\/\/github\.com\/.*\/.*\/commit\/[0-9a-f]{40}/;
-
   if (msg.content.match(cmtLnk) !== null) {
 
+    todaysUpdaters.push(msg.author.username);
     msg.react('🔥')
-    const thread = await msg.channel.threads.create({
-      name: "AppreciationThread",
+    const thread = await msg.startThread({
+      name: `${msg.author.username}'s AppreciationThread`,
+      // autoArchiveDuration: 60, 
     });
+
     const threadId = thread.id;
-
-
-    const webhooks = await msg.channel.fetchWebhooks();
+    const webhooks = await msg.channel.fetchWebhooks('1035584676238209055', 'jpoVX8at5Pi6N_NwQf7nZ6iYaUjVmUGpSdDBO16Y1tEeYvU9vydcJOUo3veL-lYvLsrF');
     const webhook = webhooks.first();
+
 
     await webhook.send({
       content: 'Damnn Bro, You Work too hard !!',
       threadId: threadId,
     });
+
+    scheduleArchieve.scheduleJob('37 18 * * *', async () => {
+      thread.setArchived(true);
+    });
+
   }
+
+
+
 });
+
+
+scheduleEmbed.scheduleJob('39 18 * * *', async () => {
+  if (todaysUpdaters[0] === 'empty' && todaysUpdaters.length > 1) {
+    todaysUpdaters.shift();
+  }
+
+  client.channels.cache.get('1035584676238209055').send(`Today's Daily commiters \n${todaysUpdaters}`);
+  todaysUpdaters = [];
+  todaysUpdaters.push('empty');
+
+});
+
 
 
 
